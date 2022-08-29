@@ -14,6 +14,6 @@ public class DbInstaller : IInstaller
         services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
             .AddEntityFrameworkStores<DataContext>();
 
-        services.AddSingleton<IPostService, PostService>();
+        services.AddScoped<IPostService, PostService>();
     }
 }

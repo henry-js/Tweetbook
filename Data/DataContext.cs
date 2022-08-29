@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Tweetbook.Domain;
 
-namespace Tweetbook.Data
+namespace Tweetbook.Data;
+
+public class DataContext : IdentityDbContext
 {
-    public class DataContext : IdentityDbContext
+    public DataContext(DbContextOptions<DataContext> options)
+        : base(options)
     {
-        public DataContext(DbContextOptions<DataContext> options)
-            : base(options)
-        {
-        }
     }
+
+    public DbSet<Post> Posts { get; set; }
 }

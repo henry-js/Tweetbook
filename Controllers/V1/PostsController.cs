@@ -8,22 +8,22 @@ namespace Tweetbook.Controllers.V1;
 
 public class PostsController : ControllerBase
 {
-    IPostService postService;
+    IPostService _postService;
     public PostsController(IPostService postService)
     {
-        this.postService = postService;
+        _postService = postService;
     }
 
     [HttpGet(ApiRoutes.Posts.GetAll)]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        return Ok(postService.GetPosts());
+        return Ok(await _postService.GetPostsAsync());
     }
 
     [HttpGet(ApiRoutes.Posts.Get)]
-    public IActionResult Get([FromRoute] Guid postId)
+    public async Task<IActionResult> Get([FromRoute] Guid postId)
     {
-        var post = postService.GetPostById(postId);
+        var post = await _postService.GetPostByIdAsync(postId);
 
         if (post == null)
             return NotFound();
@@ -31,21 +31,47 @@ public class PostsController : ControllerBase
         return Ok(post);
     }
 
-    [HttpPost(ApiRoutes.Posts.Create)]
-    public IActionResult Create([FromBody] CreatePostRequest postRequest)
+    [HttpPut(ApiRoutes.Posts.Update)]
+    public async Task<IActionResult> Update([FromRoute] Guid postId, [FromBody] UpdatePostRequest request)
     {
-        var post = new Post { Id = postRequest.Id };
+        var post = new Post
+        {
+            Id = postId,
+            Name = request.Name
+        };
 
-        if (post.Id != Guid.Empty)
-            post.Id = Guid.NewGuid();
+        var updated = await _postService.UpdatePostAsync(post);
 
-        postService.GetPosts().Add(post);
+        if (updated)
+            return Ok(post);
+
+        return NotFound();
+
+    }
+
+    [HttpPost(ApiRoutes.Posts.Create)]
+    public async Task<IActionResult> Create([FromBody] CreatePostRequest postRequest)
+    {
+        var post = new Post { Name = postRequest.Name };
+
+        await _postService.CreatePostAsync(post);
 
         var baseUri = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}";
         var locationUri = baseUri + "/" + ApiRoutes.Posts.Get.Replace("{postId}", post.Id.ToString());
 
-        var response = new PostResponse { Id = post.Id };
+        var response = new PostResponse { Id = post.Id, Name = post.Name };
 
         return Created(locationUri, response);
+    }
+
+    [HttpDelete(ApiRoutes.Posts.Delete)]
+    public async Task<IActionResult> Delete([FromRoute] Guid postId)
+    {
+        var deleted = await _postService.DeletePostAsync(postId);
+
+        if (deleted)
+            return NoContent();
+
+        return NotFound();
     }
 }
