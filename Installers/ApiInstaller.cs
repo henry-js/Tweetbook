@@ -1,8 +1,10 @@
+using System.Security.Principal;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Tweetbook.Options;
+using Tweetbook.Services;
 
 namespace Tweetbook.Installers;
 
@@ -13,6 +15,7 @@ public class ApiInstaller : IInstaller
         var jwtSettings = new JwtSettings();
         configuration.GetSection(nameof(JwtSettings)).Bind(jwtSettings);
         services.AddSingleton(jwtSettings);
+        services.AddScoped<IIdentityService, IdentityService>();
 
         services.AddControllers(); // TODO : switch back to using AddControllersWithViews if bugs occur
 
